@@ -62,11 +62,9 @@ void analyzer::main_analyzer(const filesystem::path& path_ftp) {
     throw (std::string("Path is wrong\n"));
   if (!filesystem::is_directory(path_ftp))
     throw (std::string("Dir is wrong\n"));
- // out << path_to_ftp << std::endl;
   for (const auto &i : filesystem::directory_iterator(path_to_ftp)){
     if (!filesystem::is_directory(i)) continue;
     if (i.path().filename().string() == "docs") continue;
-   // out << i.path().filename().string() << std::endl;
     std::string broker = i.path().filename().string();
     parse_dir_info(i.path(),broker);
   }
