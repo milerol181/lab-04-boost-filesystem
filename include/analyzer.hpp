@@ -17,15 +17,15 @@ struct account{
 std::ostream &operator<<(std::ostream &out, account &ac);
 class analyzer {
  public:
-  analyzer(const filesystem::path& pathToFtp);
   friend std::ostream &operator<<(std::ostream &out, analyzer &a);
-  void parse_dir_info(const filesystem::path& pathToDir,
+  void parse_dir_info(const filesystem::path&path_dir,
                       const std::string &broker);
-  void main_analyzer(const filesystem::path& pathToFtp);
+  void main_analyzer(const filesystem::path&path_ftp);
   std::string get_number_account(const std::string &filename);
-  bool check_filename(const filesystem::path& pathToFile);
+  bool check_filename(const filesystem::path&path_file);
   std::string get_date(const std::string& filename) const;
   void set_lastdates();
+  ~analyzer();
  private:
   filesystem::path path_to_ftp;
   std::vector<struct account*> accounts;

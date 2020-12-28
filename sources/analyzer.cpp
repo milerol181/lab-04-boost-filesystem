@@ -3,13 +3,11 @@
 //
 
 #include "analyzer.hpp"
-analyzer::analyzer(const filesystem::path& pathToFtp)
-    : path_to_ftp(pathToFtp) {}
 std::ostream& operator<<(std::ostream& out, analyzer& a) {
   for (const auto & current_account : a.accounts){
     for (size_t i = 0; i < current_account->filenames.size(); ++i){
-      out << current_account->broker_name << " " <<
-          current_account->filenames[i] << std::endl;
+      out << current_account->broker_name << " "
+          << current_account->filenames[i] << std::endl;
     }
   }
 for (const auto & current_account : a.accounts){
@@ -18,24 +16,23 @@ for (const auto & current_account : a.accounts){
   return out;
 }
 std::ostream& operator<<(std::ostream& out, account& ac) {
-  out << " broker: "  << ac.broker_name
-      << " account: " << ac.number_account
-      << " files: "   << ac.filenames.size()
-      << " lastdate: " << ac.lastdate;
+  out << "broker:"    << ac.broker_name
+      << " account:"  << ac.number_account
+      << " files:"    << ac.filenames.size()
+      << " lastdate:" << ac.lastdate;
   return out;
 }
-void analyzer::parse_dir_info(const filesystem::path& pathToDir,
+void analyzer::parse_dir_info(const filesystem::path& path_dir,
                               const std::string &broker) {
   filesystem::path current_path;
-  if (filesystem::is_symlink(pathToDir)){
-    current_path = filesystem::read_symlink(pathToDir);
+  if (filesystem::is_symlink(path_dir)){
+    current_path = filesystem::read_symlink(path_dir);
   } else {
-    current_path = pathToDir;
+    current_path = path_dir;
   }
   for (const auto &i : filesystem::directory_iterator(current_path)){
     if (filesystem::is_directory(i)) {
       parse_dir_info(i.path(),broker);
-      continue;
     } else {
       if (!check_filename(i.path())) continue;
       std::string ac_number = get_number_account(i.path().filename().string());
@@ -58,10 +55,13 @@ void analyzer::parse_dir_info(const filesystem::path& pathToDir,
       }
     }
   }
-
 }
-void analyzer::main_analyzer(const filesystem::path& pathToFtp) {
-  path_to_ftp = pathToFtp;
+void analyzer::main_analyzer(const filesystem::path& path_ftp) {
+  path_to_ftp = path_ftp;
+  if (!filesystem::exists(path_ftp))
+    throw (std::string("Path is wrong\n"));
+  if (!filesystem::is_directory(path_ftp))
+    throw (std::string("Dir is wrong\n"));
  // out << path_to_ftp << std::endl;
   for (const auto &i : filesystem::directory_iterator(path_to_ftp)){
     if (!filesystem::is_directory(i)) continue;
@@ -80,29 +80,28 @@ const int number_length = 8;
 const int date_length = 8;
 const char dot = '.';
 std::string analyzer::get_number_account(const std::string &filename) {
-  if (filename.find(under_line) == std::string::npos) return "error";
-  std::string tmp = filename.substr(filename.find('_') + 1,
+  std::string tmp = filename.substr(filename.find(under_line) + 1,
                                     number_length);
   return tmp;
 }
-bool analyzer::check_filename(const filesystem::path& pathToFile) {
-  if (pathToFile.extension() != extension_txt) return false;
-  else if (pathToFile.stem().has_extension())
+bool analyzer::check_filename(const filesystem::path& path_file) {
+  if (path_file.extension() != extension_txt) return false;
+  else if (path_file.stem().has_extension())
     return false;
-  std::string filename = pathToFile.stem().filename().string();
-  size_t underscore_pos = filename.find(under_line);
+  std::string filename = path_file.stem().filename().string();
+  size_t underline_pos = filename.find(under_line);
   std::string tmp;
-  if (underscore_pos) tmp = filename.substr(0, underscore_pos);
+  if (underline_pos) tmp = filename.substr(0, underline_pos);
   else return false;
   if (tmp != balance) return false;
-  filename = filename.substr(underscore_pos + 1);
-  underscore_pos = filename.find(under_line);
-  if (!underscore_pos) return false;
+  filename = filename.substr(underline_pos + 1);
+  underline_pos = filename.find(under_line);
+  if (!underline_pos) return false;
   else {
-    tmp = filename.substr(0, underscore_pos);
+    tmp = filename.substr(0, underline_pos);
     if (tmp.size() != number_length) return false;
     if (tmp.find_first_not_of(digits) != std::string::npos) return false;
-    tmp = filename.substr( underscore_pos + 1);
+    tmp = filename.substr(underline_pos + 1);
     if (tmp.size() != date_length) return false;
     if (tmp.find_first_not_of(digits) != std::string::npos) return false;
   }
@@ -123,4 +122,9 @@ std::string analyzer::get_date(const std::string& filename) const {
                                      filename.find(under_line) - 1);
   date = date.substr(date.find(under_line) + 1);
   return date;
+}
+analyzer::~analyzer() {
+  for (const auto & current_account : accounts) {
+    delete current_account;
+  }
 }
