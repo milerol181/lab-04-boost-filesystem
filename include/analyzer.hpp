@@ -12,7 +12,7 @@ struct account{
   std::string broker_name;
   std::vector<std::string> filenames;
   std::string number_account;
-
+  std::string lastdate;
 };
 std::ostream &operator<<(std::ostream &out, account &ac);
 class analyzer {
@@ -23,7 +23,9 @@ class analyzer {
                       const std::string &broker);
   void main_analyzer(const filesystem::path& pathToFtp);
   std::string get_number_account(const std::string &filename);
-
+  bool check_filename(const filesystem::path& pathToFile);
+  std::string get_date(const std::string& filename) const;
+  void set_lastdates();
  private:
   filesystem::path path_to_ftp;
   std::vector<struct account*> accounts;
