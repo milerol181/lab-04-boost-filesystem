@@ -3,6 +3,14 @@
 //
 
 #include "analyzer.hpp"
+const std::string extension_txt = ".txt";
+const std::string balance = "balance";
+const std::string digits = "0123456789";
+const std::string directory_docs = "docs";
+const char under_line = '_';
+const int number_length = 8;
+const int date_length = 8;
+const char dot = '.';
 std::ostream& operator<<(std::ostream& out, analyzer& a) {
   for (const auto & current_account : a.accounts){
     for (size_t i = 0; i < current_account->filenames.size(); ++i){
@@ -64,19 +72,12 @@ void analyzer::main_analyzer(const filesystem::path& path_ftp) {
     throw (std::string("Dir is wrong\n"));
   for (const auto &i : filesystem::directory_iterator(path_to_ftp)){
     if (!filesystem::is_directory(i)) continue;
-    if (i.path().filename().string() == "docs") continue;
+    if (i.path().filename().string() == directory_docs) continue;
     std::string broker = i.path().filename().string();
     parse_dir_info(i.path(),broker);
   }
   set_lastdates();
 }
-const std::string extension_txt = ".txt";
-const std::string balance = "balance";
-const std::string digits = "0123456789";
-const char under_line = '_';
-const int number_length = 8;
-const int date_length = 8;
-const char dot = '.';
 std::string analyzer::get_number_account(const std::string &filename) {
   std::string tmp = filename.substr(filename.find(under_line) + 1,
                                     number_length);
