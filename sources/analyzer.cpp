@@ -11,7 +11,7 @@ const char under_line = '_';
 const int number_length = 8;
 const int date_length = 8;
 const char dot = '.';
-std::ostream& operator<<(std::ostream& out, analyzer& a) {
+std::ostream& operator<<(std::ostream& out, const analyzer& a) {
   for (const auto & current_account : a.accounts){
     for (size_t i = 0; i < current_account->filenames.size(); ++i){
       out << current_account->broker_name << " "
@@ -23,7 +23,7 @@ for (const auto & current_account : a.accounts){
 }
   return out;
 }
-std::ostream& operator<<(std::ostream& out, account& ac) {
+std::ostream& operator<<(std::ostream& out, const account& ac) {
   out << "broker:"    << ac.broker_name
       << " account:"  << ac.number_account
       << " files:"    << ac.filenames.size()
@@ -63,20 +63,6 @@ void analyzer::parse_dir_info(const filesystem::path& path_dir,
       }
     }
   }
-}
-void analyzer::main_analyzer(const filesystem::path& path_ftp) {
-  path_to_ftp = path_ftp;
-  if (!filesystem::exists(path_ftp))
-    throw (std::string("Path is wrong\n"));
-  if (!filesystem::is_directory(path_ftp))
-    throw (std::string("Dir is wrong\n"));
-  for (const auto &i : filesystem::directory_iterator(path_to_ftp)){
-    if (!filesystem::is_directory(i)) continue;
-    if (i.path().filename().string() == directory_docs) continue;
-    std::string broker = i.path().filename().string();
-    parse_dir_info(i.path(),broker);
-  }
-  set_lastdates();
 }
 std::string analyzer::get_number_account(const std::string &filename) {
   std::string tmp = filename.substr(filename.find(under_line) + 1,
@@ -126,4 +112,18 @@ analyzer::~analyzer() {
   for (const auto & current_account : accounts) {
     delete current_account;
   }
+}
+analyzer::analyzer(const filesystem::path& path_ftp)
+    : path_to_ftp(path_ftp) {
+  if (!filesystem::exists(path_ftp))
+    throw (std::string("Path is wrong\n"));
+  if (!filesystem::is_directory(path_ftp))
+    throw (std::string("Dir is wrong\n"));
+  for (const auto &i : filesystem::directory_iterator(path_to_ftp)){
+    if (!filesystem::is_directory(i)) continue;
+    if (i.path().filename().string() == directory_docs) continue;
+    std::string broker = i.path().filename().string();
+    parse_dir_info(i.path(),broker);
+  }
+  set_lastdates();
 }

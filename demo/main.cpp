@@ -8,9 +8,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Too many arguments" << std::endl;
     return -1;
   }
-  analyzer analyzing;
   try {
-    analyzing.main_analyzer(path_ftp);
+    analyzer analyzing(path_ftp);
     std::cout << analyzing << std::endl;
   } catch (std::string error) {
     std::cout << error << std::endl;
